@@ -7,7 +7,7 @@
             flat
             v-on="{ ...tooltip, ...menu }"
             class="avatar-button">
-            <v-avatar color="secondary">
+            <v-avatar color="secondary" :size="$vuetify.breakpoint.smAndDown ? 40 : 48">
               <img
                 v-if="user.photoURL"
                 :src="user.photoURL">

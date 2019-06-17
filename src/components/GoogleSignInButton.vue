@@ -1,19 +1,45 @@
 <template>
   <v-btn
-    @click="$emit('click', $event)"
-    class="google-sign-in-button"
+    @click="click"
+    class="google-sign-in-button white--text"
     color="#4285f4"
     block>
     <div class="google-sign-in-button__icon">
       <img src="../assets/google-sign-in-icon.svg">
     </div>
     <v-spacer></v-spacer>
-    <div class="google-sing-in-button__text">
+    <v-progress-circular
+      :size="23"
+      :width="2"
+      indeterminate
+      v-if="loading">
+    </v-progress-circular>
+    <div
+      class="google-sing-in-button__text"
+      v-else>
       Sign in with Google
     </div>
     <v-spacer></v-spacer>
   </v-btn>
 </template>
+
+<script>
+export default {
+  props: {
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  methods: {
+    click() {
+      if (!this.loading) {
+        this.$emit('click');
+      }
+    },
+  },
+};
+</script>
 
 <style lang="scss" scoped>
   .google-sign-in-button {
@@ -31,7 +57,6 @@
     .google-sing-in-button__text {
       margin-left: 12px;
       margin-right: 12px;
-      color: #fff;
     }
   }
 </style>

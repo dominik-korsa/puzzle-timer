@@ -16,7 +16,10 @@
                 </v-layout>
               </v-card-text>
               <v-card-actions>
-                <google-sign-in-button @click="googleSignIn"></google-sign-in-button>
+                <google-sign-in-button
+                  @click="googleSignIn"
+                  :loading="googleLoading > 0">
+                </google-sign-in-button>
               </v-card-actions>
             </v-card>
           </v-flex>
@@ -51,6 +54,7 @@ export default {
   },
   data() {
     return {
+      googleLoading: 0,
       snackbar: {
         active: false,
         color: '',
@@ -62,9 +66,11 @@ export default {
   methods: {
     generateGoogleErrorMessage(error) {
       if (error.code === 'auth/popup-closed-by-user') return 'The sign in popup has been closed';
+      if (error.code === 'auth/cancelled-popup-request') return 'Popup already opened';
       return error.message;
     },
     async googleSignIn() {
+      this.googleLoading += 1;
       const provider = new firebase.auth.GoogleAuthProvider();
       await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
       try {
@@ -76,6 +82,8 @@ export default {
         this.snackbar.timeout = 6000;
         this.snackbar.active = true;
       }
+
+      this.googleLoading -= 1;
     },
   },
 };

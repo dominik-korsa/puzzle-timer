@@ -76,7 +76,7 @@ export default {
 
 <style lang="scss" scoped>
   .avatar-button {
-    padding: 8px;
+    padding: 0 8px;
     min-width: 0;
   }
 </style>

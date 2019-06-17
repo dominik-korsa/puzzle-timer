@@ -3,7 +3,7 @@
     <v-content>
     <v-toolbar color="primary white--text">
       <v-toolbar-title>
-        Puzzle timer
+        Puzzle Timer
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>

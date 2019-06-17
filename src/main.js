@@ -33,6 +33,8 @@ firebase.auth().onAuthStateChanged(() => {
 });
 
 router.beforeEach((to, from, next) => {
+  document.title = to.meta.title;
+
   if (!authSynced) {
     next();
     return;

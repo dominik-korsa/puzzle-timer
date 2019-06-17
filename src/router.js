@@ -13,12 +13,16 @@ const router = new Router({
       component: Home,
       meta: {
         requiresAuth: true,
+        title: 'Puzzle Timer',
       },
     },
     {
       path: '/sign-in',
       name: 'sign-in',
       component: SignIn,
+      meta: {
+        title: 'Login | Puzzle Timer',
+      },
       // component: () => import(/* webpackChunkName: "sign-in" */ './views/SignIn.vue'),
     },
   ],

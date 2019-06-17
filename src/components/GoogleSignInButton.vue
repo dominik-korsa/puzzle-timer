@@ -17,7 +17,6 @@
 
 <style lang="scss" scoped>
   .google-sign-in-button {
-    border-radius: 2px;
     padding: 1px;
 
     .google-sign-in-button__icon {

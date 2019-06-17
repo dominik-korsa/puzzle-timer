@@ -1,31 +1,26 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    {{ (user ? user.displayName : false) || '' }}
-    <v-btn @click="signOut">Sign out</v-btn>
-  </div>
+  <v-app>
+    <v-content>
+    <v-toolbar color="primary white--text">
+      <v-toolbar-title>
+        Puzzle timer
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <account-button></account-button>
+      </v-toolbar-items>
+    </v-toolbar>
+    </v-content>
+  </v-app>
 </template>
 
 <script>
-import * as firebase from 'firebase/app';
-import 'firebase/auth';
+import AccountButton from '../components/AccountButton.vue';
 
 export default {
   name: 'home',
-  methods: {
-    async signOut() {
-      await firebase.auth().signOut();
-    },
-  },
-  data: () => ({
-    user: null,
-  }),
-  beforeCreate() {
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        this.user = user;
-      }
-    });
+  components: {
+    AccountButton,
   },
 };
 </script>

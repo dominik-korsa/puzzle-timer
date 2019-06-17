@@ -1,13 +1,5 @@
 <template>
-  <v-app>
-    <v-content>
-      <div id="nav">
-        <router-link to="/">Home</router-link> |
-        <router-link to="/sign-in">Sign in</router-link>
-      </div>
-      <router-view/>
-    </v-content>
-  </v-app>
+  <router-view/>
 </template>
 
 <style lang="scss">

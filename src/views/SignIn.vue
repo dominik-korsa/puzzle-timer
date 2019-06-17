@@ -23,6 +23,20 @@
         </v-layout>
       </v-container>
     </v-content>
+    <v-snackbar
+      v-model="snackbar.active"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+    >
+      {{ snackbar.text }}
+      <v-btn
+        dark
+        flat
+        @click="snackbar.active = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
   </v-app>
 </template>
 
@@ -35,7 +49,21 @@ export default {
   components: {
     GoogleSignInButton,
   },
+  data() {
+    return {
+      snackbar: {
+        active: false,
+        color: '',
+        timeout: 6000,
+        text: 'Hello, I\'m a snackbar',
+      },
+    };
+  },
   methods: {
+    generateGoogleErrorMessage(error) {
+      if (error.code === 'auth/popup-closed-by-user') return 'The sign in popup has been closed';
+      return error.message;
+    },
     async googleSignIn() {
       const provider = new firebase.auth.GoogleAuthProvider();
       await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
@@ -43,7 +71,10 @@ export default {
         await firebase.auth().signInWithPopup(provider);
       } catch (error) {
         console.warn(error);
-        alert(error.message);
+        this.snackbar.text = this.generateGoogleErrorMessage(error);
+        this.snackbar.color = 'error';
+        this.snackbar.timeout = 6000;
+        this.snackbar.active = true;
       }
     },
   },

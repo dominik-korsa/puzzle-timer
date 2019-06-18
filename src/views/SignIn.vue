@@ -46,6 +46,7 @@
 <script>
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
+import 'firebase/firestore';
 import GoogleSignInButton from '../components/GoogleSignInButton.vue';
 
 export default {
@@ -74,7 +75,8 @@ export default {
       const provider = new firebase.auth.GoogleAuthProvider();
       await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
       try {
-        await firebase.auth().signInWithPopup(provider);
+        const currentUser = (await firebase.auth().signInWithPopup(provider)).user;
+        firebase.firestore().collection('users').doc(currentUser.uid).set({});
       } catch (error) {
         console.warn(error);
         this.snackbar.text = this.generateGoogleErrorMessage(error);

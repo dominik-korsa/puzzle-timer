@@ -4,10 +4,10 @@
       <v-tooltip bottom>
         <template #activator="{ on: tooltip }">
           <v-btn
-            flat
+            icon
             v-on="{ ...tooltip, ...menu }"
             class="avatar-button">
-            <v-avatar color="secondary" :size="$vuetify.breakpoint.smAndDown ? 40 : 48">
+            <v-avatar color="secondary" :size="$vuetify.breakpoint.smAndDown ? 40 : 44">
               <img
                 v-if="user.photoURL"
                 :src="user.photoURL">
@@ -76,7 +76,8 @@ export default {
 
 <style lang="scss" scoped>
   .avatar-button {
-    padding: 0 8px;
-    min-width: 0;
+    height: fit-content;
+    width: fit-content;
+    padding: 4px;
   }
 </style>

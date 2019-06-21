@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
+import { firestorePlugin } from 'vuefire';
 import './plugins/vuetify';
 import App from './App.vue';
 import router from './router';
@@ -47,6 +48,8 @@ router.beforeEach((to, from, next) => {
   else if (!requiresAuth && currentUser)next('/');
   else next();
 });
+
+Vue.use(firestorePlugin);
 
 new Vue({
   router,

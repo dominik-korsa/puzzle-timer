@@ -1,169 +1,202 @@
 <template>
   <v-app>
-    <v-toolbar color="primary white--text">
-      <v-toolbar-title>
-        Puzzle Timer
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-        <v-btn icon color="white--text">
-          <v-icon>mdi-settings</v-icon>
-        </v-btn>
-        <account-button></account-button>
-      </v-toolbar-items>
-    </v-toolbar>
-    <v-content>
-      <v-layout fill-height>
-        <v-flex shrink class="sidebar">
-          <v-layout column>
-            <v-flex class="pa-4">
-              <v-input
-                class="solve-type v-text-field v-text-field--enclosed v-text-field--outline"
-                prepend-icon="mdi-cube-outline"
-                @click="solveTypesDialogActive = true">
-                <div class="v-text-field__slot">
-                  <label
-                    aria-hidden="true"
-                    class="v-label v-label--active theme--light"
-                    style="left: 0px; right: auto; position: absolute;">Solve type</label>
-                  <input type="text" :value="solveTypeDisplayName" readonly>
-                </div>
-                <div class="v-input__append-inner">
-                  <div class="v-input__icon v-input__icon--append">
-                    <v-icon>mdi-menu-down</v-icon>
+    <v-layout fill-height column>
+      <v-toolbar color="primary white--text">
+        <v-toolbar-title>
+          Puzzle Timer
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn icon color="white--text">
+            <v-icon>mdi-settings</v-icon>
+          </v-btn>
+          <account-button></account-button>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-content fill-height>
+        <v-layout fill-height>
+          <v-flex shrink class="sidebar" fill-height>
+            <v-layout column fill-height>
+              <v-flex class="px-3 py-4" shrink>
+                <v-input
+                  class="solve-type v-text-field v-text-field--enclosed v-text-field--outline"
+                  prepend-icon="mdi-cube-outline"
+                  @click="solveTypesDialogActive = true">
+                  <div class="v-text-field__slot">
+                    <label
+                      aria-hidden="true"
+                      class="v-label v-label--active theme--light"
+                      style="left: 0px; right: auto; position: absolute;">Solve type</label>
+                    <input type="text" :value="solveTypeDisplayName" readonly>
                   </div>
-                </div>
-              </v-input>
-            </v-flex>
-            <v-divider></v-divider>
-            <v-flex>
-              <v-list>
-                <v-list-tile v-for="element in solvesList" :key="element.id">
-                  <v-list-tile-title class="list__time">
-                    <span class="font-weight-light">{{ element.minutes }}</span>
-                    <span class="font-weight-regular">:</span>
-                    <span class="font-weight-regular">{{ element.seconds }}</span>
-                    <span class="font-weight-regular">.</span>
-                    <span class="font-weight-light">{{ element.centiseconds }}</span>
-                  </v-list-tile-title>
-                  <v-list-tile-action>
-                    <v-layout row align-center>
-                      <v-flex>
-                        <v-btn-toggle
-                          multiple
-                          :value="element.penaltiesArray"
-                          @change="solvesListUpdatePenalties(element.id, $event)"
-                          class="penalties">
-                          <v-btn flat color="yellow darken-4" value="+2">
-                            +2
-                          </v-btn>
-                          <v-btn flat color="red" value="dnf">
-                            DNF
-                          </v-btn>
-                        </v-btn-toggle>
-                      </v-flex>
-                      <v-flex class="list__delete">
-                        <v-tooltip bottom>
-                          <template v-slot:activator="{ on }">
-                            <v-btn
-                              icon
-                              color="red--text"
-                              @click="remove(element.id)"
-                              v-on="on">
-                              <v-icon color="red">mdi-delete</v-icon>
-                            </v-btn>
-                          </template>
-                          <span>Remove</span>
-                        </v-tooltip>
-                      </v-flex>
-                    </v-layout>
-                  </v-list-tile-action>
-                </v-list-tile>
-              </v-list>
-            </v-flex>
-          </v-layout>
-        </v-flex>
-        <v-divider vertical></v-divider>
-        <v-flex>
-          <v-layout column fill-height>
-            <v-flex
-              class="timer-layout"
-              @click="startStop" v-ripple="{
-                class: 'primary--text',
-              }">
-              <v-layout
-                align-center
-                justify-center
-                fill-height>
-                <v-flex
-                  v-if="inspectionActive"
-                  class="inspection-timer"
-                  v-text="inspectionTimeDisplay">
-                </v-flex>
-                <v-flex class="timer" v-else>
-                  <span class="minutes">{{ minutesString }}</span>
-                  <span class="minutesSeparator">:</span>
-                  <span class="seconds">{{ secondsString }}</span>
-                  <span class="secondsSeparator">.</span>
-                  <span class="centiseconds">{{ centisecondsString }}</span>
-                </v-flex>
-              </v-layout>
-            </v-flex>
-            <v-flex shrink>
+                  <div class="v-input__append-inner">
+                    <div class="v-input__icon v-input__icon--append">
+                      <v-icon>mdi-menu-down</v-icon>
+                    </div>
+                  </div>
+                </v-input>
+              </v-flex>
               <v-divider></v-divider>
-            </v-flex>
-            <v-flex
-              shrink
-              :class="{
-                'py-4': $vuetify.breakpoint.smAndDown,
-                'py-5': $vuetify.breakpoint.mdAndUp,
-              }"
-              align-self-center>
-              <v-btn-toggle multiple v-model="penaltiesArray" class="penalties">
-                <v-btn flat color="yellow darken-4" value="+2" :disabled="!endTime">
-                  +2
-                </v-btn>
-                <v-btn flat color="red" value="dnf" :disabled="!endTime">
-                  DNF
-                </v-btn>
-              </v-btn-toggle>
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on }">
-                   <v-btn
-                    :disabled="!endTime"
-                    icon
-                    color="red--text"
-                    v-on="on"
-                    @click="removeCurrent">
-                    <v-icon color="red">mdi-delete</v-icon>
+              <v-flex class="list__flex">
+                <v-list class="list__v-list" dense>
+                  <template v-for="element in solvesList">
+                    <v-list-tile :key="element.id">
+                      <v-list-tile-title class="list__time">
+                        <span class="font-weight-light">{{ element.minutes }}</span>
+                        <span class="font-weight-regular">:</span>
+                        <span class="font-weight-regular">{{ element.seconds }}</span>
+                        <span class="font-weight-regular">.</span>
+                        <span class="font-weight-light">{{ element.centiseconds }}</span>
+                      </v-list-tile-title>
+                      <v-list-tile-action>
+                        <v-layout row align-center>
+                          <v-flex>
+                            <v-btn-toggle
+                              multiple
+                              :value="element.penaltiesArray"
+                              @change="solvesListUpdatePenalties(element.id, $event)"
+                              class="penalties">
+                              <v-btn flat color="yellow darken-4" value="+2" small>
+                                +2
+                              </v-btn>
+                              <v-btn flat color="red" value="dnf" small>
+                                DNF
+                              </v-btn>
+                            </v-btn-toggle>
+                          </v-flex>
+                          <v-flex class="list__delete">
+                            <v-tooltip bottom>
+                              <template v-slot:activator="{ on }">
+                                <v-btn
+                                  small
+                                  icon
+                                  color="red--text"
+                                  @click="remove(element.id)"
+                                  v-on="on">
+                                  <v-icon color="red">mdi-delete</v-icon>
+                                </v-btn>
+                              </template>
+                              <span>Remove</span>
+                            </v-tooltip>
+                          </v-flex>
+                        </v-layout>
+                      </v-list-tile-action>
+                    </v-list-tile>
+                    <v-divider :key="`${element.id}-divider`"></v-divider>
+                  </template>
+                </v-list>
+              </v-flex>
+              <v-flex shrink>
+                <div class="ad">
+                  300×250
+                </div>
+              </v-flex>
+            </v-layout>
+          </v-flex>
+          <v-divider vertical></v-divider>
+          <v-flex>
+            <v-layout column fill-height>
+              <v-flex
+                class="timer-layout"
+                @click="startStop" v-ripple="{
+                  class: 'primary--text',
+                }">
+                <v-layout
+                  align-center
+                  justify-center
+                  fill-height>
+                  <v-flex
+                    v-if="inspectionActive"
+                    class="inspection-timer"
+                    v-text="inspectionTimeDisplay">
+                  </v-flex>
+                  <v-flex class="timer" v-else>
+                    <template v-if="minutes > 0">
+                      <span class="minutes">{{ minutesString }}</span>
+                      <span class="minutesSeparator">:</span>
+                    </template>
+                    <span class="seconds">{{ secondsString }}</span>
+                    <span class="secondsSeparator">.</span>
+                    <span class="centiseconds">{{ centisecondsString }}</span>
+                  </v-flex>
+                </v-layout>
+              </v-flex>
+              <v-flex shrink>
+                <v-divider></v-divider>
+              </v-flex>
+              <v-flex
+                shrink
+                :class="{
+                  'py-4': $vuetify.breakpoint.smAndDown,
+                  'py-5': $vuetify.breakpoint.mdAndUp,
+                }"
+                align-self-center>
+                <v-btn-toggle multiple v-model="penaltiesArray" class="penalties">
+                  <v-btn flat color="yellow darken-4" value="+2" :disabled="!endTime" outline>
+                    +2
                   </v-btn>
-                </template>
-                <span>Remove</span>
-              </v-tooltip>
-              <v-btn
-                @click="startStop"
-                class="startStopButton"
-                outline
-                :large="running"
-                :color="running && !inspectionActive ? 'red' : 'green'">
-                {{ inspectionActive ? 'Start' : (running ? 'Stop' : 'Start inspection') }}
-              </v-btn>
-            </v-flex>
-          </v-layout>
-        </v-flex>
-      </v-layout>
-    </v-content>
+                  <v-btn flat color="red" value="dnf" :disabled="!endTime" outline>
+                    DNF
+                  </v-btn>
+                </v-btn-toggle>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-btn
+                      :disabled="!endTime"
+                      icon
+                      color="red--text"
+                      v-on="on"
+                      @click="removeCurrent">
+                      <v-icon color="red">mdi-delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Remove</span>
+                </v-tooltip>
+                <v-btn
+                  @click="startStop"
+                  class="startStopButton"
+                  outline
+                  :large="running"
+                  :color="running && !inspectionActive ? 'red' : 'green'">
+                  {{ inspectionActive ? 'Start' : (running ? 'Stop' : 'Start inspection') }}
+                </v-btn>
+              </v-flex>
+            </v-layout>
+          </v-flex>
+        </v-layout>
+      </v-content>
+    </v-layout>
     <solve-type-dialog v-model="solveTypesDialogActive" :type.sync="solveType"></solve-type-dialog>
   </v-app>
 </template>
 
 <style lang="scss">
+  html {
+    overflow-y: auto;
+  }
+
+  .v-content {
+    height: 0;
+  }
+
   .v-toolbar {
     z-index: 10;
   }
 
   .sidebar {
     min-width: 256px;
+  }
+
+  .ad {
+    width: 300px;
+    height: 250px;
+    background-color: red;
+    color: white;
+    text-align: center;
+    font-size: 24px;
+    line-height: 250px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .startStopButton {
@@ -192,6 +225,14 @@
     }
   }
 
+  .list__flex {
+    overflow: auto;
+  }
+
+  .list__v-list {
+    padding: 0;
+  }
+
   .list__time {
     width: fit-content;
     flex-grow: 1;
@@ -218,7 +259,7 @@
   }
 
   .timer {
-    font-size: 16rem;
+    font-size: 12rem;
     font-family: 'Roboto Mono', monospace;
     text-align: center;
 
@@ -242,7 +283,7 @@
 
     .centiseconds {
       font-weight: 100;
-      font-size: 12rem;
+      font-size: 8rem;
     }
   }
 </style>

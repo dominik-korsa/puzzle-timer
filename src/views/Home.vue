@@ -98,6 +98,10 @@
             <v-layout column fill-height>
               <v-flex
                 class="timer-layout"
+                :class="{
+                  'red white--text lighten-1': startTimeoutState === 'pressed',
+                  'green white--text lighten-1': startTimeoutState === 'ready',
+                }"
                 @click="startStop" v-ripple="{
                   class: 'primary--text',
                 }">
@@ -315,6 +319,9 @@ export default {
     solves: [],
     db: null,
     solve: null,
+    spaceKeyDownActionDone: false,
+    startTimeoutState: null,
+    startTimeoutStateTimeoutId: null,
   }),
   created() {
     document.addEventListener('keydown', this.keyDown);
@@ -331,12 +338,36 @@ export default {
       if (event.code === 'Space') {
         if (this.spaceKeyDown) return;
         this.spaceKeyDown = new Date();
-        this.startStop();
+        if (!this.running || (this.running && !this.inspectionActive)) {
+          this.startStop();
+          this.spaceKeyDownActionDone = true;
+        } else if (this.inspectionActive) {
+          this.startTimeoutState = 'pressed';
+          this.startTimeoutStateTimeoutId = setTimeout(() => {
+            if (this.startTimeoutState === 'pressed') {
+              this.startTimeoutState = 'ready';
+            }
+            this.startTimeoutStateTimeoutId = null;
+          }, 500);
+        }
       }
     },
     keyUp(event) {
       if (event.code === 'Space') {
         this.spaceKeyDown = null;
+        if (this.spaceKeyDownActionDone) {
+          this.spaceKeyDownActionDone = false;
+          return;
+        }
+
+        if (this.inspectionActive) {
+          if (this.startTimeoutState === 'ready') {
+            this.start();
+          } else {
+            clearTimeout(this.startTimeoutStateTimeoutId);
+          }
+          this.startTimeoutState = null;
+        }
       }
     },
     startStop() {

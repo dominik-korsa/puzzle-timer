@@ -38,22 +38,26 @@
             <v-divider></v-divider>
             <v-flex>
               <v-list>
-                <v-list-tile>
+                <v-list-tile v-for="element in solvesList" :key="element.id">
                   <v-list-tile-title class="list__time">
-                    <span class="font-weight-light">{{ minutesString }}</span>
+                    <span class="font-weight-light">{{ element.minutes }}</span>
                     <span class="font-weight-regular">:</span>
-                    <span class="font-weight-regular">{{ secondsString }}</span>
+                    <span class="font-weight-regular">{{ element.seconds }}</span>
                     <span class="font-weight-regular">.</span>
-                    <span class="font-weight-light">{{ centisecondsString }}</span>
+                    <span class="font-weight-light">{{ element.centiseconds }}</span>
                   </v-list-tile-title>
                   <v-list-tile-action>
                     <v-layout row align-center>
                       <v-flex>
-                        <v-btn-toggle multiple v-model="penaltiesArray" class="penalties">
-                          <v-btn flat color="yellow darken-4" value="+2" :disabled="!endTime">
+                        <v-btn-toggle
+                          multiple
+                          :value="element.penaltiesArray"
+                          @change="solvesListUpdatePenalties(element.id, $event)"
+                          class="penalties">
+                          <v-btn flat color="yellow darken-4" value="+2">
                             +2
                           </v-btn>
-                          <v-btn flat color="red" value="dnf" :disabled="!endTime">
+                          <v-btn flat color="red" value="dnf">
                             DNF
                           </v-btn>
                         </v-btn-toggle>
@@ -62,9 +66,9 @@
                         <v-tooltip bottom>
                           <template v-slot:activator="{ on }">
                             <v-btn
-                              :disabled="!endTime"
                               icon
                               color="red--text"
+                              @click="remove(element.id)"
                               v-on="on">
                               <v-icon color="red">mdi-delete</v-icon>
                             </v-btn>
@@ -91,7 +95,12 @@
                 align-center
                 justify-center
                 fill-height>
-                <v-flex class="timer">
+                <v-flex
+                  v-if="inspectionActive"
+                  class="inspection-timer"
+                  v-text="inspectionTimeDisplay">
+                </v-flex>
+                <v-flex class="timer" v-else>
                   <span class="minutes">{{ minutesString }}</span>
                   <span class="minutesSeparator">:</span>
                   <span class="seconds">{{ secondsString }}</span>
@@ -124,7 +133,8 @@
                     :disabled="!endTime"
                     icon
                     color="red--text"
-                    v-on="on">
+                    v-on="on"
+                    @click="removeCurrent">
                     <v-icon color="red">mdi-delete</v-icon>
                   </v-btn>
                 </template>
@@ -132,9 +142,11 @@
               </v-tooltip>
               <v-btn
                 @click="startStop"
+                class="startStopButton"
                 outline
-                :color="running ? 'red' : 'green'">
-                {{ running ? 'Stop' : 'Start' }}
+                :large="running"
+                :color="running && !inspectionActive ? 'red' : 'green'">
+                {{ inspectionActive ? 'Start' : (running ? 'Stop' : 'Start inspection') }}
               </v-btn>
             </v-flex>
           </v-layout>
@@ -152,6 +164,10 @@
 
   .sidebar {
     min-width: 256px;
+  }
+
+  .startStopButton {
+    min-width: 192px;
   }
 
   .solve-type {
@@ -192,6 +208,13 @@
 
   .timer-layout {
     cursor: pointer;
+  }
+
+  .inspection-timer {
+    font-size: 12rem;
+    font-family: 'Roboto Mono', monospace;
+    text-align: center;
+    font-weight: 100;
   }
 
   .timer {
@@ -238,7 +261,8 @@ export default {
     SolveTypeDialog,
   },
   data: () => ({
-    penaltiesArray: [],
+    inspectionTimeLeft: null,
+    inspectionIntervalId: null,
     startTime: null,
     endTime: null,
     elapsedMilliseconds: 0,
@@ -246,6 +270,10 @@ export default {
     spaceKeyDown: null,
     solveType: '333',
     solveTypesDialogActive: false,
+    user: null,
+    solves: [],
+    db: null,
+    solve: null,
   }),
   created() {
     document.addEventListener('keydown', this.keyDown);
@@ -272,27 +300,55 @@ export default {
     },
     startStop() {
       if (this.running) {
-        this.stop();
+        if (this.inspectionIntervalId) {
+          this.start();
+        } else {
+          this.stop();
+        }
       } else {
-        this.start();
+        this.startInspection();
       }
     },
+    startInspection() {
+      if (this.solve) this.$unbind('solve');
+      this.inspectionTimeLeft = 15;
+      this.startTime = null;
+      this.endTime = null;
+      this.elapsedMilliseconds = 0;
+      cancelAnimationFrame(this.animationFrameRequestId);
+      this.inspectionIntervalId = setInterval(() => {
+        this.inspectionTimeLeft -= 1;
+      }, 1000);
+    },
     start() {
+      if (this.solve) this.$unbind('solve');
+      clearInterval(this.inspectionIntervalId);
+      this.inspectionIntervalId = null;
       if (this.running) return;
-      this.penaltiesArray = [];
       this.startTime = new Date();
       this.endTime = null;
       this.elapsedMilliseconds = 0;
       cancelAnimationFrame(this.animationFrameRequestId);
       this.animationFrameRequestId = requestAnimationFrame(this.step);
     },
-    stop() {
+    async stop() {
       if (!this.running) return;
       this.endTime = new Date();
       this.elapsedMilliseconds = this.endTime.getTime()
         - this.startTime.getTime();
       cancelAnimationFrame(this.animationFrameRequestId);
       this.animationFrameRequestId = null;
+
+      const { currentUser } = firebase.auth();
+      const solves = this.db.collection('users').doc(currentUser.uid).collection('solves');
+
+      this.$bind('solve', await solves.add({
+        date: new Date(),
+        dnf: this.isInspectionDNF,
+        plus2: this.isInspectionPlus2,
+        'solve-type': this.solveType,
+        time: this.elapsedMilliseconds / 1000,
+      }));
     },
     step() {
       if (this.startTime && !this.endTime) {
@@ -304,17 +360,98 @@ export default {
           - this.startTime.getTime();
       }
     },
+    solvesListUpdatePenalties(id, value) {
+      const { currentUser } = firebase.auth();
+      if (!currentUser) return;
+      const solve = this.db.collection('users').doc(currentUser.uid).collection('solves').doc(id);
+      solve.update({
+        dnf: value.indexOf('dnf') !== -1,
+        plus2: value.indexOf('+2') !== -1,
+      });
+    },
     updateFirestore(currentUser) {
-      if (currentUser) {
-        this.$bind('solveTypes', firebase.firestore().collection('users').doc(currentUser.uid).collection('solve-types'));
-        console.log(firebase.firestore().collection('users').doc(currentUser.uid).collection('solve-types')
-          .path);
-        console.log(firebase.firestore().collection('users').doc(currentUser.uid).collection('solve-types')
-          .get());
+      if (!this.db) {
+        this.db = firebase.firestore();
       }
+      if (currentUser) {
+        const users = this.db.collection('users');
+        this.$bind('user', users.doc(currentUser.uid));
+        this.$bind('solves', users.doc(currentUser.uid).collection('solves').orderBy('date', 'desc'));
+      }
+    },
+    removeCurrent() {
+      this.remove(this.solve.id);
+    },
+    remove(id) {
+      if (this.solve && id === this.solve.id) {
+        this.$unbind('solve');
+        this.startTime = null;
+        this.endTime = null;
+        this.elapsedMilliseconds = 0;
+      }
+      const { currentUser } = firebase.auth();
+      if (!currentUser) return;
+      const solve = this.db.collection('users').doc(currentUser.uid).collection('solves').doc(id);
+      solve.delete();
     },
   },
   computed: {
+    solvesList() {
+      if (!this.solves) return [];
+
+      return this.solves.filter(solve => solve['solve-type'] === this.solveType).map((solve) => {
+        const penaltiesArray = [];
+        if (solve.dnf) penaltiesArray.push('dnf');
+        if (solve.plus2) penaltiesArray.push('+2');
+
+        return {
+          centiseconds: Math.floor((solve.time % 1) * 100).toLocaleString(undefined, {
+            minimumIntegerDigits: 2,
+          }),
+          seconds: Math.floor((solve.time % 60)).toLocaleString(undefined, {
+            minimumIntegerDigits: 2,
+          }),
+          minutes: Math.floor((solve.time) / 60).toLocaleString(undefined, {
+            minimumIntegerDigits: 1,
+          }),
+          penaltiesArray,
+          id: solve.id,
+        };
+      });
+    },
+    penaltiesArray: {
+      get() {
+        if (!this.solve) return [];
+        const array = [];
+        if (this.solve.dnf) array.push('dnf');
+        if (this.solve.plus2) array.push('+2');
+        return array;
+      },
+      set(penaltiesArray) {
+        const { currentUser } = firebase.auth();
+        if (!this.solve) return;
+        if (!currentUser) return;
+        const solve = this.db.collection('users').doc(currentUser.uid).collection('solves').doc(this.solve.id);
+        solve.update({
+          dnf: penaltiesArray.indexOf('dnf') !== -1,
+          plus2: penaltiesArray.indexOf('+2') !== -1,
+        });
+      },
+    },
+    inspectionTimeDisplay() {
+      if (this.isInspectionDNF) {
+        return 'DNF';
+      } if (this.isInspectionPlus2) {
+        return '+2';
+      }
+      return this.inspectionTimeLeft.toString();
+    },
+    isInspectionPlus2() {
+      return this.inspectionTimeLeft <= 0 && this.inspectionTimeLeft > -2;
+    },
+    isInspectionDNF() {
+      return this.inspectionTimeLeft <= -2;
+    },
     solveTypeDisplayName() {
       switch (this.solveType) {
         case '222':
@@ -353,8 +490,11 @@ export default {
           return this.solveType;
       }
     },
+    inspectionActive() {
+      return !!this.inspectionIntervalId;
+    },
     running() {
-      return !!this.startTime && !this.endTime;
+      return (!!this.startTime || !!this.inspectionIntervalId) && !this.endTime;
     },
     centiseconds() {
       return Math.floor((this.elapsedMilliseconds % 1000) / 10);

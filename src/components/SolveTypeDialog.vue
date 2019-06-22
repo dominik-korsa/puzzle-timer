@@ -4,11 +4,9 @@
     width="800"
   >
     <v-card>
-      <v-card-title
-        class="headline"
-        primary-title>
-        Solve type
-      </v-card-title>
+      <v-toolbar color="primary white--text">
+        <v-toolbar-title>Solve type</v-toolbar-title>
+      </v-toolbar>
 
       <v-item-group v-model="selectedType">
         <v-container grid-list-md>

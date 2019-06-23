@@ -530,7 +530,7 @@ export default {
       this.startBlocked = true;
       setTimeout(() => {
         this.startBlocked = false;
-      }, 2000);
+      }, 1000);
 
       const { currentUser } = firebase.auth();
       const solves = this.db.collection('users').doc(currentUser.uid).collection('solves');

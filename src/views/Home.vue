@@ -222,7 +222,11 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <solve-type-dialog v-model="solveTypesDialogActive" :type.sync="solveType"></solve-type-dialog>
+    <solve-type-dialog
+      v-model="solveTypesDialogActive"
+      :type="user ? user['solve-type'] : null"
+      @update:type="updateSolveType($event)">
+    </solve-type-dialog>
   </v-app>
 </template>
 
@@ -366,7 +370,6 @@ export default {
     elapsedMilliseconds: 0,
     animationFrameRequestId: null,
     spaceKeyDown: null,
-    solveType: '333',
     solveTypesDialogActive: false,
     user: null,
     solves: [],
@@ -394,9 +397,19 @@ export default {
     document.removeEventListener('keyup', this.keyUp);
   },
   watch: {
-    solveType: {
+    user: {
       immediate: true,
-      handler() {
+      async handler(value) {
+        if (!value) return;
+        if (!value['solve-type']) {
+          const { currentUser } = firebase.auth();
+          if (currentUser) {
+            const user = this.db.collection('users').doc(currentUser.uid);
+            await user.update({
+              'solve-type': '333',
+            });
+          }
+        }
         if (this.running) return;
         this.generateScramble();
       },
@@ -404,8 +417,8 @@ export default {
   },
   methods: {
     generateScramble() {
-      if (this.solveType) {
-        this.scramble = new Scrambo().type(this.solveType).get();
+      if (this.user['solve-type']) {
+        this.scramble = new Scrambo().type(this.user['solve-type']).get();
       } else {
         this.scramble = null;
       }
@@ -463,6 +476,15 @@ export default {
         this.startInspection();
       }
     },
+    updateSolveType(type) {
+      const { currentUser } = firebase.auth();
+      if (!currentUser) return;
+      if (!type) return;
+      const user = this.db.collection('users').doc(currentUser.uid);
+      user.update({
+        'solve-type': type,
+      });
+    },
     startInspection() {
       if (this.startBlocked) return;
       if (this.solve) this.$unbind('solve');
@@ -517,7 +539,7 @@ export default {
         date: new Date(),
         dnf: this.isInspectionDNF,
         plus2: this.isInspectionPlus2,
-        'solve-type': this.solveType,
+        'solve-type': this.user['solve-type'],
         time: this.elapsedMilliseconds / 1000,
       }));
     },
@@ -580,7 +602,7 @@ export default {
     solvesList() {
       if (!this.solves) return [];
 
-      return this.solves.filter(solve => solve['solve-type'] === this.solveType).map((solve) => {
+      return this.solves.filter(solve => solve['solve-type'] === this.user['solve-type']).map((solve) => {
         const penaltiesArray = [];
         if (solve.dnf) penaltiesArray.push('dnf');
         if (solve.plus2) penaltiesArray.push('+2');
@@ -634,7 +656,10 @@ export default {
       return this.inspectionTimeLeft <= -2;
     },
     solveTypeDisplayName() {
-      switch (this.solveType) {
+      if (!this.user || !this.user['solve-type']) {
+        return '';
+      }
+      switch (this.user['solve-type']) {
         case '222':
           return '2x2x2';
         case '333':
@@ -668,7 +693,7 @@ export default {
         case 'sq1':
           return 'Square-1';
         default:
-          return this.solveType;
+          return this.user['solve-type'];
       }
     },
     inspectionActive() {

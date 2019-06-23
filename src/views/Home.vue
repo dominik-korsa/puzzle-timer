@@ -96,13 +96,22 @@
           <v-divider vertical></v-divider>
           <v-flex>
             <v-layout column fill-height>
+              <template v-if="scramble">
+                <v-flex
+                  shrink
+                  class="py-4 px-5 text-xs-center headline"
+                  align-self-center>
+                  {{ scramble.join(' ') }}
+                </v-flex>
+                <v-divider></v-divider>
+              </template>
               <v-flex
                 class="timer-layout"
                 :class="{
                   'red white--text lighten-1': startTimeoutState === 'pressed',
                   'green white--text lighten-1': startTimeoutState === 'ready',
                 }"
-                @click="startStop" v-ripple="{
+                @click="startStop" v-ripple="startBlocked ? false : {
                   class: 'primary--text',
                 }">
                 <v-layout
@@ -130,10 +139,7 @@
               </v-flex>
               <v-flex
                 shrink
-                :class="{
-                  'py-4': $vuetify.breakpoint.smAndDown,
-                  'py-5': $vuetify.breakpoint.mdAndUp,
-                }"
+                class="py-3"
                 align-self-center>
                 <v-btn-toggle multiple v-model="penaltiesArray" class="penalties">
                   <v-btn flat color="yellow darken-4" value="+2" :disabled="!endTime" outline>
@@ -160,7 +166,8 @@
                   @click="startStop"
                   class="startStopButton"
                   outline
-                  :large="running"
+                  :disabled="startBlocked"
+                  large
                   :color="running && !inspectionActive ? 'red' : 'green'">
                   {{ inspectionActive ? 'Start' : (running ? 'Stop' : 'Start inspection') }}
                 </v-btn>
@@ -229,11 +236,11 @@
   }
 
   .sidebar {
-    min-width: 256px;
+    min-width: fit-content;
   }
 
   .ad {
-    width: 300px;
+    // width: 300px;
     height: 250px;
     background-color: red;
     color: white;
@@ -337,6 +344,7 @@
 <script>
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
+import Scrambo from 'scrambo';
 import AccountButton from '../components/AccountButton.vue';
 import SolveTypeDialog from '../components/SolveTypeDialog.vue';
 
@@ -368,6 +376,8 @@ export default {
       active: false,
       id: null,
     },
+    scramble: null,
+    startBlocked: false,
   }),
   created() {
     document.addEventListener('keydown', this.keyDown);
@@ -379,7 +389,23 @@ export default {
     document.removeEventListener('keydown', this.keyDown);
     document.removeEventListener('keyup', this.keyUp);
   },
+  watch: {
+    solveType: {
+      immediate: true,
+      handler() {
+        if (this.running) return;
+        this.generateScramble();
+      },
+    },
+  },
   methods: {
+    generateScramble() {
+      if (this.solveType) {
+        this.scramble = new Scrambo().type(this.solveType).get();
+      } else {
+        this.scramble = null;
+      }
+    },
     keyDown(event) {
       if (event.code === 'Space') {
         if (this.removeDialog.active || this.solveTypesDialogActive) return;
@@ -434,7 +460,9 @@ export default {
       }
     },
     startInspection() {
+      if (this.startBlocked) return;
       if (this.solve) this.$unbind('solve');
+      this.scramble = null;
       this.inspectionTimeLeft = 15;
       this.startTime = null;
       this.endTime = null;
@@ -462,6 +490,13 @@ export default {
         - this.startTime.getTime();
       cancelAnimationFrame(this.animationFrameRequestId);
       this.animationFrameRequestId = null;
+
+      this.generateScramble();
+
+      this.startBlocked = true;
+      setTimeout(() => {
+        this.startBlocked = false;
+      }, 2000);
 
       const { currentUser } = firebase.auth();
       const solves = this.db.collection('users').doc(currentUser.uid).collection('solves');

@@ -38,52 +38,56 @@
               </v-flex>
               <v-divider></v-divider>
               <v-flex class="list__flex">
-                <v-list class="list__v-list" dense>
-                  <template v-for="element in solvesList">
-                    <v-list-tile :key="element.id">
-                      <v-list-tile-title class="list__time">
-                        <span class="font-weight-light">{{ element.minutes }}</span>
-                        <span class="font-weight-regular">:</span>
-                        <span class="font-weight-regular">{{ element.seconds }}</span>
-                        <span class="font-weight-regular">.</span>
-                        <span class="font-weight-light">{{ element.centiseconds }}</span>
-                      </v-list-tile-title>
-                      <v-list-tile-action>
-                        <v-layout row align-center>
-                          <v-flex>
-                            <v-btn-toggle
-                              multiple
-                              :value="element.penaltiesArray"
-                              @change="solvesListUpdatePenalties(element.id, $event)"
-                              class="penalties">
-                              <v-btn flat color="yellow darken-4" value="+2" small>
-                                +2
-                              </v-btn>
-                              <v-btn flat color="red" value="dnf" small>
-                                DNF
-                              </v-btn>
-                            </v-btn-toggle>
-                          </v-flex>
-                          <v-flex class="list__delete">
-                            <v-tooltip bottom>
-                              <template v-slot:activator="{ on }">
-                                <v-btn
-                                  small
-                                  icon
-                                  color="red--text"
-                                  @click.stop="openRemoveDialog(element.id)"
-                                  v-on="on">
-                                  <v-icon color="red">mdi-delete</v-icon>
+                <v-list class="list__v-list transparent" dense>
+                  <v-fade-transition
+                    group
+                    leave-absolute>
+                    <template v-for="element in solvesList">
+                      <v-list-tile :key="element.id" class="white">
+                        <v-list-tile-title class="list__time">
+                          <span class="font-weight-light">{{ element.minutes }}</span>
+                          <span class="font-weight-regular">:</span>
+                          <span class="font-weight-regular">{{ element.seconds }}</span>
+                          <span class="font-weight-regular">.</span>
+                          <span class="font-weight-light">{{ element.centiseconds }}</span>
+                        </v-list-tile-title>
+                        <v-list-tile-action>
+                          <v-layout row align-center>
+                            <v-flex>
+                              <v-btn-toggle
+                                multiple
+                                :value="element.penaltiesArray"
+                                @change="solvesListUpdatePenalties(element.id, $event)"
+                                class="penalties">
+                                <v-btn flat color="yellow darken-4" value="+2" small>
+                                  +2
                                 </v-btn>
-                              </template>
-                              <span>Remove</span>
-                            </v-tooltip>
-                          </v-flex>
-                        </v-layout>
-                      </v-list-tile-action>
-                    </v-list-tile>
-                    <v-divider :key="`${element.id}-divider`"></v-divider>
-                  </template>
+                                <v-btn flat color="red" value="dnf" small>
+                                  DNF
+                                </v-btn>
+                              </v-btn-toggle>
+                            </v-flex>
+                            <v-flex class="list__delete">
+                              <v-tooltip bottom>
+                                <template v-slot:activator="{ on }">
+                                  <v-btn
+                                    small
+                                    icon
+                                    color="red--text"
+                                    @click.stop="openRemoveDialog(element.id)"
+                                    v-on="on">
+                                    <v-icon color="red">mdi-delete</v-icon>
+                                  </v-btn>
+                                </template>
+                                <span>Remove</span>
+                              </v-tooltip>
+                            </v-flex>
+                          </v-layout>
+                        </v-list-tile-action>
+                      </v-list-tile>
+                      <v-divider :key="`${element.id}-divider`"></v-divider>
+                    </template>
+                  </v-fade-transition>
                 </v-list>
               </v-flex>
               <v-flex shrink>

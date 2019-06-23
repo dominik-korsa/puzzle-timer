@@ -71,7 +71,7 @@
                                   small
                                   icon
                                   color="red--text"
-                                  @click="remove(element.id)"
+                                  @click.stop="openRemoveDialog(element.id)"
                                   v-on="on">
                                   <v-icon color="red">mdi-delete</v-icon>
                                 </v-btn>
@@ -150,7 +150,7 @@
                       icon
                       color="red--text"
                       v-on="on"
-                      @click="removeCurrent">
+                      @click.stop="openRemoveDialog(solve.id)">
                       <v-icon color="red">mdi-delete</v-icon>
                     </v-btn>
                   </template>
@@ -170,6 +170,47 @@
         </v-layout>
       </v-content>
     </v-layout>
+    <v-dialog v-model="removeDialog.active" :max-width="350">
+      <v-card>
+        <v-card-title class="headline">
+          Remove solve
+        </v-card-title>
+
+        <v-card-text>
+          Do you really want to remove the solve?<br>
+          <span class="body-2">This action is irreversible</span>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-text>
+          <v-layout align-center justify-center>
+            <v-icon class="mr-2">mdi-information</v-icon>
+            <span class="mr-3">You can hold Shift to skip this dialog</span>
+          </v-layout>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="secondary"
+            outline
+            autofocus
+            @click="removeDialog.active = false">
+            Cancel
+          </v-btn>
+          <v-btn
+            dark
+            color="red"
+            flat
+            @click="remove(removeDialog.id)">
+            Remove
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <solve-type-dialog v-model="solveTypesDialogActive" :type.sync="solveType"></solve-type-dialog>
   </v-app>
 </template>
@@ -322,6 +363,11 @@ export default {
     spaceKeyDownActionDone: false,
     startTimeoutState: null,
     startTimeoutStateTimeoutId: null,
+    shiftKeyDown: false,
+    removeDialog: {
+      active: false,
+      id: null,
+    },
   }),
   created() {
     document.addEventListener('keydown', this.keyDown);
@@ -336,6 +382,7 @@ export default {
   methods: {
     keyDown(event) {
       if (event.code === 'Space') {
+        if (this.removeDialog.active || this.solveTypesDialogActive) return;
         if (this.spaceKeyDown) return;
         this.spaceKeyDown = new Date();
         if (!this.running || (this.running && !this.inspectionActive)) {
@@ -350,10 +397,13 @@ export default {
             this.startTimeoutStateTimeoutId = null;
           }, 500);
         }
+      } else if (event.key === 'Shift') {
+        this.shiftKeyDown = true;
       }
     },
     keyUp(event) {
       if (event.code === 'Space') {
+        if (this.removeDialog.active || this.solveTypesDialogActive) return;
         this.spaceKeyDown = null;
         if (this.spaceKeyDownActionDone) {
           this.spaceKeyDownActionDone = false;
@@ -368,6 +418,8 @@ export default {
           }
           this.startTimeoutState = null;
         }
+      } else if (event.key === 'Shift') {
+        this.shiftKeyDown = false;
       }
     },
     startStop() {
@@ -451,8 +503,13 @@ export default {
         this.$bind('solves', users.doc(currentUser.uid).collection('solves').orderBy('date', 'desc'));
       }
     },
-    removeCurrent() {
-      this.remove(this.solve.id);
+    openRemoveDialog(id) {
+      if (this.shiftKeyDown) {
+        this.remove(id);
+      } else {
+        this.removeDialog.id = id;
+        this.removeDialog.active = true;
+      }
     },
     remove(id) {
       if (this.solve && id === this.solve.id) {
@@ -461,6 +518,7 @@ export default {
         this.endTime = null;
         this.elapsedMilliseconds = 0;
       }
+      this.removeDialog.active = false;
       const { currentUser } = firebase.auth();
       if (!currentUser) return;
       const solve = this.db.collection('users').doc(currentUser.uid).collection('solves').doc(id);

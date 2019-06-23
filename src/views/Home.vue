@@ -21,7 +21,7 @@
                 <v-input
                   class="solve-type v-text-field v-text-field--enclosed v-text-field--outline"
                   prepend-icon="mdi-cube-outline"
-                  @click="solveTypesDialogActive = true">
+                  @click.stop="openSolveTypesDialog">
                   <div class="v-text-field__slot">
                     <label
                       aria-hidden="true"
@@ -518,6 +518,10 @@ export default {
         this.elapsedMilliseconds = this.endTime.getTime()
           - this.startTime.getTime();
       }
+    },
+    openSolveTypesDialog() {
+      if (this.running) return;
+      this.solveTypesDialogActive = true;
     },
     solvesListUpdatePenalties(id, value) {
       const { currentUser } = firebase.auth();

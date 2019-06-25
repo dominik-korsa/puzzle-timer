@@ -19,15 +19,32 @@
             <v-layout column fill-height>
               <v-flex class="px-3 py-4" shrink>
                 <v-input
-                  class="solve-type v-text-field v-text-field--enclosed v-text-field--outline"
+                  class="puzzle-type v-text-field v-text-field--enclosed v-text-field--outline"
                   prepend-icon="mdi-cube-outline"
-                  @click.stop="openSolveTypesDialog">
+                  @click.stop="openPuzzleTypesDialog">
                   <div class="v-text-field__slot">
                     <label
                       aria-hidden="true"
                       class="v-label v-label--active theme--light"
-                      style="left: 0px; right: auto; position: absolute;">Solve type</label>
-                    <input type="text" :value="solveTypeDisplayName" readonly>
+                      style="left: 0px; right: auto; position: absolute;">Puzzle type</label>
+                    <input type="text" :value="puzzleTypeDisplayName" readonly>
+                  </div>
+                  <div class="v-input__append-inner">
+                    <div class="v-input__icon v-input__icon--append">
+                      <v-icon>mdi-menu-down</v-icon>
+                    </div>
+                  </div>
+                </v-input>
+                <v-input
+                  class="solve-label v-text-field v-text-field--enclosed v-text-field--outline"
+                  prepend-icon="mdi-label-outline"
+                  @click.stop="openSolveLabelDialog">
+                  <div class="v-text-field__slot">
+                    <label
+                      aria-hidden="true"
+                      class="v-label v-label--active theme--light"
+                      style="left: 0px; right: auto; position: absolute;">Solve label</label>
+                    <input type="text" :value="puzzleTypeDisplayName" readonly>
                   </div>
                   <div class="v-input__append-inner">
                     <div class="v-input__icon v-input__icon--append">
@@ -222,11 +239,16 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <solve-type-dialog
-      v-model="solveTypesDialogActive"
-      :type="user ? user['solve-type'] : null"
-      @update:type="updateSolveType($event)">
-    </solve-type-dialog>
+    <puzzle-type-dialog
+      v-model="puzzleTypesDialogActive"
+      :type="user ? user['puzzle-type'] : null"
+      @update:type="updatePuzzleType($event)">
+    </puzzle-type-dialog>
+    <solve-label-dialog
+      v-model="solveLabelDialogActive"
+      :label="user ? user['solve-label'] : null"
+      @update:label="updateSolveLabel($event)">
+    </solve-label-dialog>
   </v-app>
 </template>
 
@@ -263,7 +285,7 @@
     min-width: 192px;
   }
 
-  .solve-type {
+  .puzzle-type, .solve-label {
     .v-select__selection {
       max-width: 100%;
     }
@@ -280,7 +302,7 @@
       }
     }
 
-    .v-messages {
+    &.solve-label .v-messages {
       display: none;
     }
   }
@@ -354,13 +376,15 @@ import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import Scrambo from 'scrambo';
 import AccountButton from '../components/AccountButton.vue';
-import SolveTypeDialog from '../components/SolveTypeDialog.vue';
+import PuzzleTypeDialog from '../components/PuzzleTypeDialog.vue';
+import SolveLabelDialog from '../components/SolveLabelDialog.vue';
 
 export default {
   name: 'home',
   components: {
     AccountButton,
-    SolveTypeDialog,
+    PuzzleTypeDialog,
+    SolveLabelDialog,
   },
   data: () => ({
     inspectionTimeLeft: null,
@@ -370,7 +394,8 @@ export default {
     elapsedMilliseconds: 0,
     animationFrameRequestId: null,
     spaceKeyDown: null,
-    solveTypesDialogActive: false,
+    puzzleTypesDialogActive: false,
+    solveLabelDialogActive: false,
     user: null,
     solves: [],
     db: null,
@@ -399,33 +424,35 @@ export default {
   watch: {
     user: {
       immediate: true,
-      async handler(value) {
-        if (!value) return;
-        if (!value['solve-type']) {
+      async handler(newValue, oldValue) {
+        if (!newValue) return;
+        if (!newValue['puzzle-type']) {
           const { currentUser } = firebase.auth();
           if (currentUser) {
             const user = this.db.collection('users').doc(currentUser.uid);
             await user.update({
-              'solve-type': '333',
+              'puzzle-type': '333',
             });
           }
         }
         if (this.running) return;
-        this.generateScramble();
+        if (!oldValue || oldValue['puzzle-type'] !== newValue['puzzle-type']) {
+          this.generateScramble();
+        }
       },
     },
   },
   methods: {
     generateScramble() {
-      if (this.user['solve-type']) {
-        this.scramble = new Scrambo().type(this.user['solve-type']).get();
+      if (this.user['puzzle-type']) {
+        this.scramble = new Scrambo().type(this.user['puzzle-type']).get();
       } else {
         this.scramble = null;
       }
     },
     keyDown(event) {
       if (event.code === 'Space') {
-        if (this.removeDialog.active || this.solveTypesDialogActive) return;
+        if (this.removeDialog.active || this.puzzleTypesDialogActive) return;
         if (this.spaceKeyDown) return;
         this.spaceKeyDown = new Date();
         if (!this.running || (this.running && !this.inspectionActive)) {
@@ -446,7 +473,7 @@ export default {
     },
     keyUp(event) {
       if (event.code === 'Space') {
-        if (this.removeDialog.active || this.solveTypesDialogActive) return;
+        if (this.removeDialog.active || this.puzzleTypesDialogActive) return;
         this.spaceKeyDown = null;
         if (this.spaceKeyDownActionDone) {
           this.spaceKeyDownActionDone = false;
@@ -476,13 +503,21 @@ export default {
         this.startInspection();
       }
     },
-    updateSolveType(type) {
+    updatePuzzleType(type) {
       const { currentUser } = firebase.auth();
       if (!currentUser) return;
       if (!type) return;
       const user = this.db.collection('users').doc(currentUser.uid);
       user.update({
-        'solve-type': type,
+        'puzzle-type': type,
+      });
+    },
+    updateSolveLabel(label) {
+      const { currentUser } = firebase.auth();
+      if (!currentUser) return;
+      const user = this.db.collection('users').doc(currentUser.uid);
+      user.update({
+        'solve-label': label || null,
       });
     },
     startInspection() {
@@ -544,7 +579,7 @@ export default {
         date: new Date(),
         dnf: this.isInspectionDNF,
         plus2: this.isInspectionPlus2,
-        'solve-type': this.user['solve-type'],
+        'puzzle-type': this.user['puzzle-type'],
         time: this.elapsedMilliseconds / 1000,
       }));
     },
@@ -558,9 +593,13 @@ export default {
           - this.startTime.getTime();
       }
     },
-    openSolveTypesDialog() {
+    openPuzzleTypesDialog() {
       if (this.running) return;
-      this.solveTypesDialogActive = true;
+      this.puzzleTypesDialogActive = true;
+    },
+    openSolveLabelDialog() {
+      if (this.running) return;
+      this.solveLabelDialogActive = true;
     },
     solvesListUpdatePenalties(id, value) {
       const { currentUser } = firebase.auth();
@@ -607,7 +646,7 @@ export default {
     solvesList() {
       if (!this.solves) return [];
 
-      return this.solves.filter(solve => solve['solve-type'] === this.user['solve-type']).map((solve) => {
+      return this.solves.filter(solve => solve['puzzle-type'] === this.user['puzzle-type']).map((solve) => {
         const penaltiesArray = [];
         if (solve.dnf) penaltiesArray.push('dnf');
         if (solve.plus2) penaltiesArray.push('+2');
@@ -660,29 +699,19 @@ export default {
     isInspectionDNF() {
       return this.inspectionTimeLeft <= -2;
     },
-    solveTypeDisplayName() {
-      if (!this.user || !this.user['solve-type']) {
+    puzzleTypeDisplayName() {
+      if (!this.user || !this.user['puzzle-type']) {
         return '';
       }
-      switch (this.user['solve-type']) {
+      switch (this.user['puzzle-type']) {
         case '222':
           return '2x2x2';
         case '333':
           return '3x3x3';
-        case '333bf':
-          return '3x3x3 Blindfolded';
-        case '333oh':
-          return '3x3x3 One-Handed';
-        case '333ft':
-          return '3x3x3 With Feet';
         case '444':
           return '4x4x4';
-        case '444bf':
-          return '4x4x4 Bindfolded';
         case '555':
           return '5x5x5';
-        case '555bf':
-          return '5x5x5 Blindfolded';
         case '666':
           return '6x6x6';
         case '777':
@@ -698,7 +727,7 @@ export default {
         case 'sq1':
           return 'Square-1';
         default:
-          return this.user['solve-type'];
+          return this.user['puzzle-type'];
       }
     },
     inspectionActive() {

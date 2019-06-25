@@ -501,7 +501,12 @@ export default {
           audio.play();
         } else if (this.inspectionTimeLeft === 3) {
           const audio = new Audio('http://soundbible.com/mp3/Elevator Ding-SoundBible.com-685385892.mp3');
-          // const audio = new Audio('http://soundbible.com/mp3/Air Plane Ding-SoundBible.com-496729130.mp3');
+          audio.play();
+        } else if (this.inspectionTimeLeft === 0) {
+          const audio = new Audio('http://soundbible.com/mp3/Air Plane Ding-SoundBible.com-496729130.mp3');
+          audio.play();
+        } else if (this.inspectionTimeLeft === -2) {
+          const audio = new Audio('http://soundbible.com/mp3/Air Plane Ding-SoundBible.com-496729130.mp3');
           audio.play();
         }
       }, 1000);

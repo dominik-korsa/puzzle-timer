@@ -24,23 +24,23 @@
     </template>
     <v-card>
       <v-list>
-        <v-list-tile :avatar="!!user.photoURL">
-          <v-list-tile-avatar v-if="user.photoURL">
+        <v-list-item>
+          <v-list-item-avatar v-if="user.photoURL">
             <img :src="user.photoURL" alt="">
-          </v-list-tile-avatar>
+          </v-list-item-avatar>
 
-          <v-list-tile-content>
-            <v-list-tile-title v-text="user.displayName"></v-list-tile-title>
-            <v-list-tile-sub-title v-text="user.email"></v-list-tile-sub-title>
-          </v-list-tile-content>
-        </v-list-tile>
+          <v-list-item-content>
+            <v-list-item-title v-text="user.displayName"></v-list-item-title>
+            <v-list-item-subtitle v-text="user.email"></v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
 
       <v-divider></v-divider>
 
       <v-card-actions>
         <v-btn
-          outline
+          outlined
           color="secondary"
           @click="signOut"
           block>
@@ -76,8 +76,10 @@ export default {
 
 <style lang="scss" scoped>
   .avatar-button {
-    height: fit-content;
-    width: fit-content;
-    padding: 4px;
+    height: fit-content !important;
+    width: fit-content !important;
+    margin-left: 8px !important;
+    margin-right: -4px !important;
+    padding: 4px !important;
   }
 </style>

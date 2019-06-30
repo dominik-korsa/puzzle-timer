@@ -8,29 +8,19 @@
         <v-toolbar-title>Solve label</v-toolbar-title>
       </v-toolbar>
 
-      <v-item-group v-model="selectedLabel">
-        <v-list class="mt-3 py-0" subheader>
-          <v-divider></v-divider>
-          <v-list-tile
-            :class="selectedLabel ? '' : 'secondary--text'"
-            @click="selectedLabel = null">
-            <v-list-tile-action>
-              <v-icon v-if="!selectedLabel" color="secondary">mdi-label</v-icon>
-              <v-icon v-else>mdi-label-outline</v-icon>
-            </v-list-tile-action>
-
-            <v-list-tile-title>
-              Normal
-            </v-list-tile-title>
-          </v-list-tile>
-          <solve-label-dialog-item value="xYN31rkBBi0mbpfiqNnW">
-            Blindfolded
+      <v-list>
+        <v-list-item-group
+          :value="label || 'normal'"
+          @change="selectedLabelChange"
+          mandatory color="secondary">
+          <solve-label-dialog-item value="normal">
+            Normal
           </solve-label-dialog-item>
-          <solve-label-dialog-item value="xYN31rkBBi0mbpfiqNnW++">
-            Blindfolded
+          <solve-label-dialog-item :value="label.id" v-for="label in labels" :key="label.id">
+            {{ label.name }}
           </solve-label-dialog-item>
-        </v-list>
-      </v-item-group>
+        </v-list-item-group>
+      </v-list>
 
       <v-divider></v-divider>
 
@@ -38,7 +28,7 @@
         <v-spacer></v-spacer>
         <v-btn
           color="secondary"
-          flat
+          text
           @click="dialogActive = false"
         >
           Close
@@ -58,16 +48,18 @@ export default {
   data() {
     return {
       dialogActive: this.value,
-      selectedLabel: this.label,
     };
   },
+  methods: {
+    selectedLabelChange(value) {
+      if (value === 'normal') {
+        this.$emit('update:label', null);
+      } else {
+        this.$emit('update:label', value);
+      }
+    },
+  },
   watch: {
-    selectedLabel(value) {
-      this.$emit('update:label', value);
-    },
-    label(value) {
-      this.selectedLabel = value;
-    },
     dialogActive(value) {
       this.$emit('input', value);
     },
@@ -82,6 +74,10 @@ export default {
     },
     label: {
       type: String,
+    },
+    labels: {
+      type: Array,
+      default: () => [],
     },
   },
 };

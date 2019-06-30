@@ -43,7 +43,8 @@ export default {
 
 <style lang="scss" scoped>
   .google-sign-in-button {
-    padding: 1px;
+    padding: 1px !important;
+    justify-content: start;
 
     .google-sign-in-button__icon {
       height: 18px;
@@ -51,7 +52,7 @@ export default {
       padding: 8px;
       box-sizing: content-box;
       background-color: #fff;
-      border-radius: 1px;
+      border-radius: 3px;
     }
 
     .google-sing-in-button__text {

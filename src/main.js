@@ -1,8 +1,9 @@
 import Vue from 'vue';
+import Vuetify from 'vuetify/lib';
+// import 'vuetify/dist/vuetify.min.css';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import { firestorePlugin } from 'vuefire';
-import './plugins/vuetify';
 import App from './App.vue';
 import router from './router';
 import 'roboto-fontface/css/roboto/roboto-fontface.css';
@@ -51,7 +52,26 @@ router.beforeEach((to, from, next) => {
 
 Vue.use(firestorePlugin);
 
+Vue.use(Vuetify);
+
 new Vue({
+  vuetify: new Vuetify({
+    theme: {
+      themes: {
+        light: {
+          primary: '#ffc107',
+          secondary: '#03a9f4',
+          // accent: '#82B1FF',
+          // error: '#FF5252',
+          // info: '#2196F3',
+          // success: '#4CAF50',
+          // warning: '#FFC107',
+        },
+      },
+
+    },
+    iconfont: 'mdi',
+  }),
   router,
   render: h => h(App),
 }).$mount('#app');

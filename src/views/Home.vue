@@ -1,85 +1,136 @@
 <template>
   <v-app>
     <v-layout fill-height column>
-      <v-toolbar color="primary white--text">
-        <v-toolbar-title>
-          Puzzle Timer
-        </v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
+      <v-flex shrink>
+        <v-app-bar color="primary white--text">
+          <v-toolbar-title>
+            Puzzle Timer
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
           <v-btn icon color="white--text">
             <v-icon>mdi-settings</v-icon>
           </v-btn>
           <account-button></account-button>
-        </v-toolbar-items>
-      </v-toolbar>
+        </v-app-bar>
+      </v-flex>
       <v-content fill-height>
         <v-layout fill-height>
           <v-flex shrink class="sidebar" fill-height>
             <v-layout column fill-height>
               <v-flex class="px-3 py-4" shrink>
-                <v-input
-                  class="puzzle-type v-text-field v-text-field--enclosed v-text-field--outline"
-                  prepend-icon="mdi-cube-outline"
-                  @click.stop="openPuzzleTypesDialog">
-                  <div class="v-text-field__slot">
-                    <label
-                      aria-hidden="true"
-                      class="v-label v-label--active theme--light"
-                      style="left: 0px; right: auto; position: absolute;">Puzzle type</label>
-                    <input type="text" :value="puzzleTypeDisplayName" readonly>
-                  </div>
-                  <div class="v-input__append-inner">
-                    <div class="v-input__icon v-input__icon--append">
-                      <v-icon>mdi-menu-down</v-icon>
+                <div
+                  @click.stop="openPuzzleTypesDialog"
+                  class="puzzle-type v-input v-input--is-label-active v-input--is-dirty theme--light
+                  v-text-field v-text-field--is-booted v-text-field--enclosed
+                  v-text-field--outlined v-select">
+                  <div class="v-input__control">
+                    <div
+                      role="button"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                      aria-owns="computed-id-10"
+                      class="v-input__slot">
+                      <div class="v-input__prepend-inner">
+                        <div class="v-input__icon v-input__icon--prepend-inner">
+                          <v-icon>mdi-cube-outline</v-icon>
+                        </div>
+                      </div>
+                      <fieldset aria-hidden="true">
+                        <legend style="width: 66.75px;"><span>&#8203;</span></legend>
+                      </fieldset>
+                      <div class="v-select__slot">
+                        <label
+                          aria-hidden="true"
+                          class="v-label v-label--active theme--light"
+                          style="left: -28px; right: auto; position: absolute;">
+                          Puzzle type
+                        </label>
+                        <div class="v-select__selections">
+                          <div
+                            class="v-select__selection v-select__selection--comma"
+                            v-text="puzzleTypeDisplayName"></div>
+                        </div>
+                        <div class="v-input__append-inner">
+                          <div class="v-input__icon v-input__icon--append">
+                            <v-icon>mdi-menu-down</v-icon>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </v-input>
-                <v-input
-                  class="solve-label v-text-field v-text-field--enclosed v-text-field--outline"
-                  prepend-icon="mdi-label-outline"
-                  @click.stop="openSolveLabelDialog">
-                  <div class="v-text-field__slot">
-                    <label
-                      aria-hidden="true"
-                      class="v-label v-label--active theme--light"
-                      style="left: 0px; right: auto; position: absolute;">Solve label</label>
-                    <input type="text" :value="puzzleTypeDisplayName" readonly>
-                  </div>
-                  <div class="v-input__append-inner">
-                    <div class="v-input__icon v-input__icon--append">
-                      <v-icon>mdi-menu-down</v-icon>
+                </div>
+                <div
+                  @click.stop="openSolveLabelDialog"
+                  class="solve-label v-input v-input--is-label-active v-input--is-dirty theme--light
+                  v-text-field v-text-field--is-booted v-text-field--enclosed
+                  v-text-field--outlined v-select">
+                  <div class="v-input__control">
+                    <div
+                      role="button"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                      aria-owns="computed-id-10"
+                      class="v-input__slot">
+                      <div class="v-input__prepend-inner">
+                        <div class="v-input__icon v-input__icon--prepend-inner">
+                          <v-icon>mdi-label-outline</v-icon>
+                        </div>
+                      </div>
+                      <fieldset aria-hidden="true">
+                        <legend style="width: 63.75px;"><span>&#8203;</span></legend>
+                      </fieldset>
+                      <div class="v-select__slot">
+                        <label
+                          aria-hidden="true"
+                          class="v-label v-label--active theme--light"
+                          style="left: -28px; right: auto; position: absolute;">
+                          Solve label
+                        </label>
+                        <div class="v-select__selections">
+                          <div
+                            class="v-select__selection v-select__selection--comma"
+                            v-text="solveLabelDisplayName"></div>
+                        </div>
+                        <div class="v-input__append-inner">
+                          <div class="v-input__icon v-input__icon--append">
+                            <v-icon>mdi-menu-down</v-icon>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </v-input>
+                </div>
               </v-flex>
               <v-divider></v-divider>
               <v-flex class="list__flex">
-                <v-list class="list__v-list transparent" dense>
+                <v-list class="list__v-list transparent">
                   <v-fade-transition
                     group
                     leave-absolute>
                     <template v-for="element in solvesList">
-                      <v-list-tile :key="element.id" class="white">
-                        <v-list-tile-title class="list__time">
+                      <v-list-item
+                        :key="element.id"
+                        class="white list__item"
+                        :dense="!solve || element.id !== solve.id">
+                        <v-list-item-title class="list__time">
                           <span class="font-weight-light">{{ element.minutes }}</span>
                           <span class="font-weight-regular">:</span>
                           <span class="font-weight-regular">{{ element.seconds }}</span>
                           <span class="font-weight-regular">.</span>
                           <span class="font-weight-light">{{ element.centiseconds }}</span>
-                        </v-list-tile-title>
-                        <v-list-tile-action>
+                        </v-list-item-title>
+                        <v-list-item-action>
                           <v-layout row align-center>
-                            <v-flex>
+                            <v-flex class="mr-3">
                               <v-btn-toggle
                                 multiple
                                 :value="element.penaltiesArray"
                                 @change="solvesListUpdatePenalties(element.id, $event)"
-                                class="penalties">
-                                <v-btn flat color="yellow darken-4" value="+2" small>
+                                class="list__penalties">
+                                <v-btn text color="yellow darken-4" value="+2" small>
                                   +2
                                 </v-btn>
-                                <v-btn flat color="red" value="dnf" small>
+                                <v-btn text color="red" value="dnf" small>
                                   DNF
                                 </v-btn>
                               </v-btn-toggle>
@@ -100,8 +151,8 @@
                               </v-tooltip>
                             </v-flex>
                           </v-layout>
-                        </v-list-tile-action>
-                      </v-list-tile>
+                        </v-list-item-action>
+                      </v-list-item>
                       <v-divider :key="`${element.id}-divider`"></v-divider>
                     </template>
                   </v-fade-transition>
@@ -132,7 +183,8 @@
                   'red white--text lighten-1': startTimeoutState === 'pressed',
                   'green white--text lighten-1': startTimeoutState === 'ready',
                 }"
-                @click="startStop" v-ripple="startBlocked ? false : {
+                @click="startStop"
+                v-ripple="startBlocked ? false : {
                   class: 'primary--text',
                 }">
                 <v-layout
@@ -163,16 +215,17 @@
                 class="py-3"
                 align-self-center>
                 <v-btn-toggle multiple v-model="penaltiesArray" class="penalties">
-                  <v-btn flat color="yellow darken-4" value="+2" :disabled="!endTime" outline>
+                  <v-btn text color="yellow darken-4" value="+2" :disabled="!endTime">
                     +2
                   </v-btn>
-                  <v-btn flat color="red" value="dnf" :disabled="!endTime" outline>
+                  <v-btn text color="red" value="dnf" :disabled="!endTime">
                     DNF
                   </v-btn>
                 </v-btn-toggle>
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on }">
                     <v-btn
+                      class="mx-4"
                       :disabled="!endTime"
                       icon
                       color="red--text"
@@ -186,7 +239,7 @@
                 <v-btn
                   @click="startStop"
                   class="startStopButton"
-                  outline
+                  outlined
                   :disabled="startBlocked"
                   large
                   :color="running && !inspectionActive ? 'red' : 'green'">
@@ -224,7 +277,7 @@
           <v-spacer></v-spacer>
           <v-btn
             color="secondary"
-            outline
+            outlined
             autofocus
             @click="removeDialog.active = false">
             Cancel
@@ -232,7 +285,7 @@
           <v-btn
             dark
             color="red"
-            flat
+            text
             @click="remove(removeDialog.id)">
             Remove
           </v-btn>
@@ -247,6 +300,7 @@
     <solve-label-dialog
       v-model="solveLabelDialogActive"
       :label="user ? user['solve-label'] : null"
+      :labels="typeLabels"
       @update:label="updateSolveLabel($event)">
     </solve-label-dialog>
   </v-app>
@@ -266,7 +320,7 @@
   }
 
   .sidebar {
-    min-width: fit-content;
+    min-width: 256px;
   }
 
   .ad {
@@ -282,29 +336,11 @@
   }
 
   .startStopButton {
-    min-width: 192px;
+    min-width: 192px !important;
   }
 
   .puzzle-type, .solve-label {
-    .v-select__selection {
-      max-width: 100%;
-    }
-
-    input {
-      width: 168px !important;
-    }
-
-    .v-input__slot {
-      margin: 0;
-
-      &, * {
-        cursor: pointer !important;
-      }
-    }
-
-    &.solve-label .v-messages {
-      display: none;
-    }
+    margin-top: 12px !important;
   }
 
   .list__flex {
@@ -315,18 +351,25 @@
     padding: 0;
   }
 
+  .list__item {
+    min-width: 256px;
+
+    .v-list-item__action {
+      margin: 0;
+      min-width: auto;
+    }
+  }
+
+  .list__penalties .v-btn {
+    padding: 0 6px !important;
+    min-width: auto !important;
+  }
+
   .list__time {
     width: fit-content;
     flex-grow: 1;
     margin-right: 24px;
-  }
-
-  .list__delete .v-btn--icon {
-    margin: 6px 8px;
-  }
-
-  .penalties.v-btn-toggle--selected {
-    box-shadow: none;
+    transition: font-size 500ms;
   }
 
   .timer-layout {
@@ -375,12 +418,16 @@
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import Scrambo from 'scrambo';
+import { ripple } from 'vuetify/lib/directives';
 import AccountButton from '../components/AccountButton.vue';
 import PuzzleTypeDialog from '../components/PuzzleTypeDialog.vue';
 import SolveLabelDialog from '../components/SolveLabelDialog.vue';
 
 export default {
   name: 'home',
+  directives: {
+    ripple,
+  },
   components: {
     AccountButton,
     PuzzleTypeDialog,
@@ -398,6 +445,7 @@ export default {
     solveLabelDialogActive: false,
     user: null,
     solves: [],
+    labels: [],
     db: null,
     solve: null,
     spaceKeyDownActionDone: false,
@@ -580,6 +628,7 @@ export default {
         dnf: this.isInspectionDNF,
         plus2: this.isInspectionPlus2,
         'puzzle-type': this.user['puzzle-type'],
+        label: this.user['solve-label'] || null,
         time: this.elapsedMilliseconds / 1000,
       }));
     },
@@ -618,6 +667,7 @@ export default {
         const users = this.db.collection('users');
         this.$bind('user', users.doc(currentUser.uid));
         this.$bind('solves', users.doc(currentUser.uid).collection('solves').orderBy('date', 'desc'));
+        this.$bind('labels', users.doc(currentUser.uid).collection('solve-labels'));
       }
     },
     openRemoveDialog(id) {
@@ -643,28 +693,48 @@ export default {
     },
   },
   computed: {
+    typeLabels() {
+      if (!this.labels) return [];
+      if (!this.user) return [];
+      if (!this.user['puzzle-type']) return [];
+      return this.labels.filter(label => label['puzzle-type'] === this.user['puzzle-type']);
+    },
+    solveLabelDisplayName() {
+      if (!this.labels) return '';
+      if (!this.user) return '';
+      if (!this.user['solve-label']) return 'Normal';
+
+      const label = this.labels.find(e => e.id === this.user['solve-label']);
+
+      if (!label) return '';
+
+      return label.name;
+    },
     solvesList() {
       if (!this.solves) return [];
 
-      return this.solves.filter(solve => solve['puzzle-type'] === this.user['puzzle-type']).map((solve) => {
-        const penaltiesArray = [];
-        if (solve.dnf) penaltiesArray.push('dnf');
-        if (solve.plus2) penaltiesArray.push('+2');
+      return this.solves
+        .filter(solve => solve['puzzle-type'] === this.user['puzzle-type']
+          && solve.label === this.user['solve-label'])
+        .map((solve) => {
+          const penaltiesArray = [];
+          if (solve.dnf) penaltiesArray.push('dnf');
+          if (solve.plus2) penaltiesArray.push('+2');
 
-        return {
-          centiseconds: Math.floor((solve.time % 1) * 100).toLocaleString(undefined, {
-            minimumIntegerDigits: 2,
-          }),
-          seconds: Math.floor((solve.time % 60)).toLocaleString(undefined, {
-            minimumIntegerDigits: 2,
-          }),
-          minutes: Math.floor((solve.time) / 60).toLocaleString(undefined, {
-            minimumIntegerDigits: 1,
-          }),
-          penaltiesArray,
-          id: solve.id,
-        };
-      });
+          return {
+            centiseconds: Math.floor((solve.time % 1) * 100).toLocaleString(undefined, {
+              minimumIntegerDigits: 2,
+            }),
+            seconds: Math.floor((solve.time % 60)).toLocaleString(undefined, {
+              minimumIntegerDigits: 2,
+            }),
+            minutes: Math.floor((solve.time) / 60).toLocaleString(undefined, {
+              minimumIntegerDigits: 1,
+            }),
+            penaltiesArray,
+            id: solve.id,
+          };
+        });
     },
     penaltiesArray: {
       get() {

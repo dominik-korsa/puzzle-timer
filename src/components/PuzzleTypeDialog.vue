@@ -61,7 +61,7 @@
         <v-spacer></v-spacer>
         <v-btn
           color="secondary"
-          flat
+          text
           @click="dialogActive = false"
         >
           Close

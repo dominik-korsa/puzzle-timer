@@ -113,11 +113,15 @@
                         class="white list__item"
                         :dense="!solve || element.id !== solve.id">
                         <v-list-item-title class="list__time">
-                          <span class="font-weight-light">{{ element.minutes }}</span>
+                          <span class="font-weight-light" v-text="element.minutes"></span>
                           <span class="font-weight-regular">:</span>
-                          <span class="font-weight-regular">{{ element.seconds }}</span>
+                          <span
+                            class="font-weight-regular"
+                            :class="{'yellow--text text--darken-3': element.plus2}"
+                            v-text="element.seconds">
+                          </span>
                           <span class="font-weight-regular">.</span>
-                          <span class="font-weight-light">{{ element.centiseconds }}</span>
+                          <span class="font-weight-light" v-text="element.centiseconds"></span>
                         </v-list-item-title>
                         <v-list-item-action>
                           <v-layout row align-center>
@@ -127,10 +131,10 @@
                                 :value="element.penaltiesArray"
                                 @change="solvesListUpdatePenalties(element.id, $event)"
                                 class="list__penalties">
-                                <v-btn text color="yellow darken-4" value="+2" small>
+                                <v-btn text color="yellow darken-4" value="+2" small @click="blur">
                                   +2
                                 </v-btn>
-                                <v-btn text color="red" value="dnf" small>
+                                <v-btn text color="red" value="dnf" small @click="blur">
                                   DNF
                                 </v-btn>
                               </v-btn-toggle>
@@ -237,7 +241,7 @@
                   <span>Remove</span>
                 </v-tooltip>
                 <v-btn
-                  @click="startStop"
+                  @click="blur($event); startStop($event)"
                   class="startStopButton"
                   outlined
                   :disabled="startBlocked"
@@ -491,6 +495,9 @@ export default {
     },
   },
   methods: {
+    blur(event) {
+      event.target.parentElement.blur();
+    },
     generateScramble() {
       if (this.user['puzzle-type']) {
         this.scramble = new Scrambo().type(this.user['puzzle-type']).get();
@@ -722,15 +729,19 @@ export default {
           if (solve.plus2) penaltiesArray.push('+2');
 
           return {
-            centiseconds: Math.floor((solve.time % 1) * 100).toLocaleString(undefined, {
-              minimumIntegerDigits: 2,
-            }),
-            seconds: Math.floor((solve.time % 60)).toLocaleString(undefined, {
-              minimumIntegerDigits: 2,
-            }),
-            minutes: Math.floor((solve.time) / 60).toLocaleString(undefined, {
-              minimumIntegerDigits: 1,
-            }),
+            centiseconds: Math.floor((solve.time % 1) * 100)
+              .toLocaleString(undefined, {
+                minimumIntegerDigits: 2,
+              }),
+            seconds: Math.floor((solve.time + (solve.plus2 ? 2 : 0)) % 60)
+              .toLocaleString(undefined, {
+                minimumIntegerDigits: 2,
+              }),
+            minutes: Math.floor((solve.time + (solve.plus2 ? 2 : 0)) / 60)
+              .toLocaleString(undefined, {
+                minimumIntegerDigits: 1,
+              }),
+            plus2: solve.plus2,
             penaltiesArray,
             id: solve.id,
           };
@@ -823,7 +834,7 @@ export default {
       });
     },
     minutes() {
-      return Math.floor((this.elapsedMilliseconds) / 60000);
+      return Math.floor(this.elapsedMilliseconds / 60000);
     },
     minutesString() {
       return this.minutes.toLocaleString(undefined, {

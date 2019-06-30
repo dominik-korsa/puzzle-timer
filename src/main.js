@@ -68,7 +68,9 @@ new Vue({
           // warning: '#FFC107',
         },
       },
-
+      options: {
+        customProperties: true,
+      },
     },
     iconfont: 'mdi',
   }),

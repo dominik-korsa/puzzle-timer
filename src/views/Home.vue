@@ -305,6 +305,7 @@
       v-model="solveLabelDialogActive"
       :label="user ? user['solve-label'] : null"
       :labels="typeLabels"
+      :puzzle-type="user ? user['puzzle-type'] : null"
       @update:label="updateSolveLabel($event)">
     </solve-label-dialog>
   </v-app>
@@ -674,7 +675,7 @@ export default {
         const users = this.db.collection('users');
         this.$bind('user', users.doc(currentUser.uid));
         this.$bind('solves', users.doc(currentUser.uid).collection('solves').orderBy('date', 'desc'));
-        this.$bind('labels', users.doc(currentUser.uid).collection('solve-labels'));
+        this.$bind('labels', users.doc(currentUser.uid).collection('solve-labels').orderBy('created'));
       }
     },
     openRemoveDialog(id) {

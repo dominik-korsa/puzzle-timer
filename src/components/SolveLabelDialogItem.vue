@@ -12,7 +12,7 @@
       </v-list-item-action>
 
       <v-list-item-title class="black--text">
-        <input class="rename__input" placeholder="New label" v-model="newName">
+        <input class="rename__input" placeholder="New label" v-model="newName" ref="input">
       </v-list-item-title>
 
       <v-list-item-action class="rename__button-action" v-if="newName.length > 0">
@@ -38,6 +38,8 @@
 </template>
 
 <script>
+import { setTimeout } from 'timers';
+
 export default {
   props: {
     renaming: {
@@ -64,6 +66,9 @@ export default {
       handler(value) {
         if (value) {
           this.newName = this.$slots.default[0].text.trim();
+          setTimeout(() => {
+            this.$refs.input.select();
+          }, 0);
         }
       },
     },

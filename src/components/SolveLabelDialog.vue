@@ -105,7 +105,7 @@ export default {
     return {
       dialogActive: this.value,
       newLabel: '',
-      renamedLabel: 'XmWIUCbkeQIj8M71cdXS',
+      renamedLabel: null,
       snackbar: false,
     };
   },

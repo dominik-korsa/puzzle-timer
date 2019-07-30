@@ -3,7 +3,6 @@
     <v-dialog
       v-model="dialogActive"
       width="400"
-      :persistent="snackbar"
     >
       <v-card>
         <v-toolbar color="primary darken-1 white--text">
@@ -75,21 +74,21 @@
           </v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
-    <v-snackbar
-      v-model="snackbar"
-      :timeout="5000"
-      color="error"
-    >
-      You can't remove a label if there are solves assigned to it
-      <v-btn
-        dark
-        text
-        @click="snackbar = false"
+      <v-snackbar
+        v-model="snackbar"
+        :timeout="5000"
+        color="error"
       >
-        Close
-      </v-btn>
-    </v-snackbar>
+        You can't remove a label if there are solves assigned to it
+        <v-btn
+          dark
+          text
+          @click="snackbar = false"
+        >
+          Close
+        </v-btn>
+      </v-snackbar>
+    </v-dialog>
   </div>
 </template>
 

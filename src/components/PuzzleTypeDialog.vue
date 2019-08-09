@@ -8,7 +8,10 @@
         <v-toolbar-title>Puzzle type</v-toolbar-title>
       </v-toolbar>
 
-      <v-item-group v-model="selectedType" mandatory>
+      <v-item-group
+        v-model="selectedType"
+        mandatory
+      >
         <v-container grid-list-md>
           <v-subheader>Cubes</v-subheader>
           <v-layout wrap>
@@ -55,10 +58,10 @@
         </v-container>
       </v-item-group>
 
-      <v-divider></v-divider>
+      <v-divider />
 
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
           color="secondary"
           text
@@ -72,40 +75,40 @@
 </template>
 
 <script>
-import PuzzleTypeDialogItem from './PuzzleTypeDialogItem.vue';
+  import PuzzleTypeDialogItem from './PuzzleTypeDialogItem.vue';
 
-export default {
-  components: {
-    PuzzleTypeDialogItem,
-  },
-  data() {
-    return {
-      dialogActive: this.value,
-      selectedType: this.type,
-    };
-  },
-  watch: {
-    selectedType(value) {
-      this.$emit('update:type', value);
+  export default {
+    components: {
+      PuzzleTypeDialogItem,
     },
-    type(value) {
-      this.selectedType = value;
+    props: {
+      value: {
+        type: Boolean,
+        default: false,
+      },
+      type: {
+        type: String,
+      },
     },
-    dialogActive(value) {
-      this.$emit('input', value);
+    data() {
+      return {
+        dialogActive: this.value,
+        selectedType: this.type,
+      };
     },
-    value(value) {
-      this.dialogActive = value;
+    watch: {
+      selectedType(value) {
+        this.$emit('update:type', value);
+      },
+      type(value) {
+        this.selectedType = value;
+      },
+      dialogActive(value) {
+        this.$emit('input', value);
+      },
+      value(value) {
+        this.dialogActive = value;
+      },
     },
-  },
-  props: {
-    value: {
-      type: Boolean,
-      default: false,
-    },
-    type: {
-      type: String,
-    },
-  },
-};
+  };
 </script>

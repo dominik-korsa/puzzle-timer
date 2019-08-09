@@ -88,6 +88,7 @@
       },
       type: {
         type: String,
+        default: null,
       },
     },
     data() {

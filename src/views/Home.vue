@@ -474,6 +474,7 @@
 
   .timer-layout {
     cursor: pointer;
+    transition: background-color 200ms, color 200ms;
   }
 
   .inspection-timer {

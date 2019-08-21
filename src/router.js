@@ -6,6 +6,7 @@ import SignIn from './views/SignIn.vue';
 Vue.use(Router);
 
 const router = new Router({
+  mode: 'history',
   routes: [
     {
       path: '/',

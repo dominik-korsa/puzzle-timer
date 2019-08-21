@@ -89,7 +89,10 @@
         await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         try {
           const currentUser = (await firebase.auth().signInWithPopup(provider)).user;
-          firebase.firestore().collection('users').doc(currentUser.uid).set({});
+          firebase.firestore().collection('users').doc(currentUser.uid).set({
+            'puzzle-type': '333',
+            'solve-label': null,
+          });
         } catch (error) {
           console.warn(error);
           this.snackbar.text = this.generateGoogleErrorMessage(error);

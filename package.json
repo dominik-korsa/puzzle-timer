@@ -10,7 +10,7 @@
   "dependencies": {
     "@mdi/font": "^2.6.95",
     "core-js": "^2.6.5",
-    "firebase": "^6.4.0",
+    "firebase": "^12.8.0",
     "roboto-fontface": "*",
     "scrambo": "^0.3.0",
     "vue": "^2.6.10",
